@@ -1,0 +1,1 @@
+require 'lettuce-android/version'

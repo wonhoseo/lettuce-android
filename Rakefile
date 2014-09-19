@@ -12,6 +12,8 @@ end
 require 'rake'
 
 require 'jeweler'
+require_relative 'lib/lettuce-android/version.rb'
+
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://guides.rubygems.org/specification-reference/ for more options
   gem.name = "lettuce-android"
@@ -21,6 +23,7 @@ Jeweler::Tasks.new do |gem|
   gem.description = %Q{TODO: longer description of your gem}
   gem.email = "cforgeleader@gmail.com"
   gem.authors = ["Wonho Seo"]
+  gem.version = Lettuce::Android::Version::STRING
   # dependencies defined in Gemfile
 end
 Jeweler::RubygemsDotOrgTasks.new
