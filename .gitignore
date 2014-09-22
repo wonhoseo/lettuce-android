@@ -9,6 +9,12 @@ rdoc
 doc
 .yardoc
 
+# For a library or gem, ignore these files since the code is intended to run in
+# multiple environments; otherwise, check them in.
+Gemfile.lock
+.ruby-version
+.ruby-gemset
+
 # bundler
 .bundle
 
