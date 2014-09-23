@@ -5,8 +5,8 @@ rvm:
 # http://docs.travis-ci.com/user/languages/android/
 env:
   matrix:
-  - ANDROID_SDKS=android-16,sys-img-armeabi-v7a-android-16 ANDROID_TARGET=android-16  ANDROID_ABI=armeabi-v7a
-  - ANDROID_SDKS=android-17,sys-img-armeabi-v7a-android-17 ANDROID_TARGET=android-17  ANDROID_ABI=armeabi-v7a
+  #- ANDROID_SDKS=android-16,sys-img-armeabi-v7a-android-16 ANDROID_TARGET=android-16  ANDROID_ABI=armeabi-v7a
+  #- ANDROID_SDKS=android-17,sys-img-armeabi-v7a-android-17 ANDROID_TARGET=android-17  ANDROID_ABI=armeabi-v7a
   - ANDROID_SDKS=android-19,sys-img-armeabi-v7a-android-19 ANDROID_TARGET=android-19  ANDROID_ABI=armeabi-v7a
 
 before_install:
@@ -31,7 +31,10 @@ before_install:
   # android list sdk --no-ui --all --extended | grep -E '^id:' | awk -F '"' '{$1=""; print $2}'
   - android list sdk --no-ui --all --extended | grep -E '^id:' | awk -F '"' '{$1=""; print $2}'
   - android list target
-  - echo "y" | android update sdk --filter platform-tools,build-tools-20.0.0,extra-android-support,$ANDROID_SDKS --no-ui --force > /dev/null
+  - echo "y" | android update sdk --filter platform-tools,tools --no-ui --force 
+  - echo "y" | android update sdk --filter build-tools-20.0.0--no-ui --force 
+  - echo "y" | android update sdk --filter extra-android-support
+  - echo "y" | android update sdk --filter $ANDROID_SDKS --no-ui --force 
 
 
   # Create and start emulator 
