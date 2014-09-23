@@ -31,10 +31,10 @@ before_install:
   # android list sdk --no-ui --all --extended | grep -E '^id:' | awk -F '"' '{$1=""; print $2}'
   - android list sdk --no-ui --all --extended | grep -E '^id:' | awk -F '"' '{$1=""; print $2}'
   - android list target
-  - echo "y" | android update sdk --filter platform-tools,tools --no-ui --force 
-  - echo "y" | android update sdk --filter build-tools-20.0.0--no-ui --force 
-  - echo "y" | android update sdk --filter extra-android-support
-  - echo "y" | android update sdk --filter $ANDROID_SDKS --no-ui --force 
+  - echo "y" | android update sdk --filter platform-tools,tools --no-ui --force
+  - echo "y" | android update sdk --filter build-tools-20.0.0 --no-ui --force
+  - echo "y" | android update sdk --filter extra-android-support --no-ui --force
+  - echo "y" | android update sdk --filter $ANDROID_SDKS --no-ui --force
 
 
   # Create and start emulator 
