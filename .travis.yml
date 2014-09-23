@@ -2,7 +2,7 @@
 # http://docs.travis-ci.com/user/languages/android/
 env:
   matrix:
-    - ANDROID_SDKS=android-19,sys-img-x86-android-19 ANDROID_TARGET=android-19  ANDROID_ABI=default/x86
+    - ANDROID_SDKS=android-19,sys-img-x86-android-19 ANDROID_TARGET=android-19  ANDROID_ABI=x86
     #- ANDROID_SDKS=android-19,sys-img-armeabi-v7a-android-19 ANDROID_TARGET=android-19  ANDROID_ABI=default/armeabi-v7a 
     #- ANDROID_SDKS=android-19,sys-img-armeabi-v7a-android-19 ANDROID_TARGET=android-19  ANDROID_ABI=default/armeabi-v7a 
     #- ANDROID_SDKS=android-17,sysimg-17 ANDROID_TARGET=android-17  ANDROID_ABI=armeabi-v7a
