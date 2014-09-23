@@ -3,7 +3,7 @@
 env:
   matrix:
     #- ANDROID_SDKS=android-19,sys-img ANDROID_TARGET=android-19  ANDROID_ABI=armeabi-v7a 
-    - ANDROID_SDKS=android-19,sys-img-armeabi-v7a-android-19 ANDROID_TARGET=android-19  ANDROID_ABI=armeabi-v7a 
+    - ANDROID_SDKS=android-19,sys-img-armeabi-v7a-android-19 ANDROID_TARGET=android-19  ANDROID_ABI=default/armeabi-v7a 
 
 before_install:
   # check the travis file
