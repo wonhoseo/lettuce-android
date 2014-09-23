@@ -24,7 +24,7 @@ before_install:
   # Note that sysimg-16 downloads the ARM, x86 and MIPS images (we should optimize this).
   # Other relevant API's:
   #  addon-google_apis-google-16
-  android list sdk --no-ui --all --extended | grep -E '^id:' | awk -F '"' '{$1=""; print $2}'
+  # android list sdk --no-ui --all --extended | grep -E '^id:' | awk -F '"' '{$1=""; print $2}'
   - echo "y" | android update sdk --filter platform-tools,build-tools-19.1.0,android-19,extra-android-support,$ANDROID_SDKS --no-ui --force > /dev/null
 
 
