@@ -2,7 +2,7 @@
 # http://docs.travis-ci.com/user/languages/android/
 env:
   matrix:
-    - ANDROID_SDKS=android-19,sys-img-19 ANDROID_TARGET=android-19  ANDROID_ABI=armeabi-v7a 
+    - ANDROID_SDKS=android-19,sysimg-19 ANDROID_TARGET=android-19  ANDROID_ABI=armeabi-v7a 
     #- ANDROID_SDKS=android-19,sys-img-armeabi-v7a-android-19 ANDROID_TARGET=android-19  ANDROID_ABI=default/armeabi-v7a 
     #- ANDROID_SDKS=android-17,sysimg-17 ANDROID_TARGET=android-17  ANDROID_ABI=armeabi-v7a
 
@@ -24,7 +24,7 @@ before_install:
   # Note that sysimg-16 downloads the ARM, x86 and MIPS images (we should optimize this).
   # Other relevant API's:
   #  addon-google_apis-google-16
-  # android list sdk --no-ui --all --extended | grep -E '^id:' | awk -F '"' '{$1=""; print $2}'
+  android list sdk --no-ui --all --extended | grep -E '^id:' | awk -F '"' '{$1=""; print $2}'
   - ( sleep 5 && while [ 1 ]; do sleep 1; echo y; done ) | android update sdk --filter build-tools-19.1.0,android-19,extra-android-support,$ANDROID_SDKS --no-ui --force 
   #- echo "y" | android update sdk --filter platform-tools,build-tools-17.0.0,android-17,extra-android-support,$ANDROID_SDKS --no-ui --force > /dev/null
 
