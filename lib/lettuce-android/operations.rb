@@ -1,7 +1,9 @@
 # encoding: UTF-8
 
-require 'lettuce-android/device'
 require 'timeout'
+
+require 'lettuce-android/device'
+require 'lettuce-android/view_client'
 
 module Lettuce module Android
 
