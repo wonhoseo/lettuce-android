@@ -19,6 +19,9 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 
 require 'rspec'
 require 'lettuce-android'
+require 'lettuce-android/version'
+require 'lettuce-android/operations'
+require 'lettuce-android/abase'
 
 # Requires supporting files with custom matchers and macros, etc,
 # in ./support/ and its subdirectories.

@@ -53,3 +53,8 @@ pkg
 
 # For rubinius:
 #*.rbc
+
+# eclipse specific git ignore
+.project
+.classpath
+.settings/
