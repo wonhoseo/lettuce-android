@@ -33,7 +33,8 @@ module Lettuce module Android
       options[:serialno] ||= nil
       progname = File.basename($PROGRAM_NAME, File.extname($PROGRAM_NAME))
       if options[:serialno].nil?         
-        options[:serialno] = ARGV.find { |arg| not(arg.start_with? "-") } || ENV['ANDROID_SERIAL'] || '.*'
+        #options[:serialno] = ARGV.find { |arg| not(arg.start_with? "-") } || ENV['ANDROID_SERIAL'] || '.*'
+        options[:serialno] = ENV['ANDROID_SERIAL'] || '.*'
       end
       ip_pattern = Regexp.compile("^(\d{1,3}\.){3}(\d{1,3})$")
       if ip_pattern.match(options[:serialno])
@@ -52,7 +53,7 @@ module Lettuce module Android
         $stderr.puts "can not connect to device"  
       end      
       if options[:verbose]
-        $stderr.puts 'Connected to device with serialno=%s' % serialno
+        $stderr.puts 'Connected to device with serialno=%s' % options[:serialno]
       end      
       secure = device.get_system_property('ro.secure')
       debuggable = device.get_system_property('ro.debuggable')

@@ -10,23 +10,44 @@ module Lettuce module Android
       def initialize options={}
         super options
         @build = {}
-        if is_transport_set?
+        if @is_transport_set
           @build[VERSION_SDK_PROPRETY] = get_property(VERSION_SDK_PROPRETY)
         end
       end
       
       def serialno=(serialno)
         super(serialno)
-        if is_transport_set?
+        if @is_transport_set
           @build[VERSION_SDK_PROPRETY] = get_property(VERSION_SDK_PROPRETY)
         end
       end
 
+      def shell(cmd)
+        recv =""
+        if cmd
+          close()
+          init_socket()
+          transport_command = 'host:transport:%s' % @serialno
+          send(transport_command)
+          #shell_command = #command("shell:#{cmd}")
+          shell_command = "shell:#{cmd}"
+          send(shell_command)
+          recv = receive(nil,false)
+        end
+        return recv.to_s    
+      end
       def get_system_property(name, strip = true)
-        
       end
       
-      def get_property(name, strip = true)        
+      def get_property_internal(name, strip = true)
+        prop = shell('getprop %s' % name)
+        if strip
+          prop.chomp!
+        end
+        return prop        
+      end
+      def get_property(name, strip = true)
+         return get_property_internal(name,strip)       
       end
       
       def get_sdk_version
