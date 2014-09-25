@@ -11,9 +11,9 @@ require 'lettuce-android/ui_automator_parser'
 module Lettuce module Android module Operations
   class ViewClient
     
-    DEBUG = true
+    DEBUG = false
     DEBUG_DEVICE = false
-    DEBUG_RECEIVED = true
+    DEBUG_RECEIVED = false
     # View server port
     VIEW_SERVER_PORT = 4939
     # version sdk property
