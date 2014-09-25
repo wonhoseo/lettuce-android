@@ -5,6 +5,10 @@ module Lettuce module Android module Operations
     
     USE_ADB_CLIENT_TO_GET_BUILD_PROPERTIES = true
     
+    attr_accessor :parent
+    attr_reader :build
+    attr_reader :attributes
+    
     class << self
       def factory (arg1, arg2, version = -1, force_view_server_use = false)
         if arg1.is_a?(::Hash)
@@ -137,8 +141,9 @@ module Lettuce module Android module Operations
       @attributes['unique_id']
     end
     
-    def add(childview)
-      @childern << childview
+    def add(child_view)
+      child_view.parent = self
+      @childern << child_view
     end
     
   end
