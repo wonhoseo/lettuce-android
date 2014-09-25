@@ -34,7 +34,8 @@ module Lettuce module Android module Operations
         if /\[(?<left>\d+),(?<top>\d+)\]\[(?<right>\d+),(?<bottom>\d+)\]/ =~ bounds
           attributes_hash['bounds'] = [[left.to_i, top.to_i],[right.to_i, bottom.to_i]]
         end
-        child_view = View.new(attributes_hash, @device, @version)
+        child_view = View.factory(attributes_hash, @device, @version)
+        views << child_view
         if @node_stack.empty?
           @root = child_view
         else

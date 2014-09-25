@@ -10,6 +10,7 @@ describe "ViewClient" do
     vc = Lettuce::Android::Operations::ViewClient.new(device,serialno)
     expect(vc).not_to be_nil
   end
+
   it "#dump" do
     device,serialno = wait_for_connection()
     vc = Lettuce::Android::Operations::ViewClient.new(device,serialno)
