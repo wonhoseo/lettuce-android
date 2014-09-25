@@ -3,6 +3,7 @@
 require 'logger'
 require 'nokogiri'
 
+require 'lettuce-android/env'
 require 'lettuce-android/view'
 require 'lettuce-android/ui_automator_parser'
 
@@ -33,6 +34,7 @@ module Lettuce module Android module Operations
       init_serialno(serialno)
 
       options = init_options(options)
+      init_adb(options[:adb])
       init_display()
       init_build()
       init_ro()
@@ -79,14 +81,28 @@ module Lettuce module Android module Operations
     def init_options(options={})
       options[:adb] = options[:adb] || nil      
       options[:autodump] = options.has_key?(:autodump) ? options[:autodump] : true
-      options[:forceviewserveruse] = options[:forceviewserveruse] || false
+      options[:forceviewserveruse] = options.has_key?(:forceviewserveruse) ? options[:forceviewserveruse] : false
       options[:localport] ||= VIEW_SERVER_PORT
       options[:remoteport] ||= VIEW_SERVER_PORT
-      options[:startviewserver] = (not options[:startviewserver].nil?) ? options[:startviewserver] : true
+      options[:startviewserver] = options.has_key?(:startviewserver) ? options[:startviewserver] : true
       options[:ignoreuiautomatorkilled] ||= false
       options
     end
     
+    def init_adb(adb)
+      if adb
+        if not Pathname.executable?(adb)
+          raise RuntimeError, "adb=#{adb} is not exectuable"
+        end
+      else
+        adb = obtain_adb_path
+      end
+      @adb = adb
+    end
+    
+    def obtain_adb_path
+      Env.adb_path
+    end
     
     def init_display
       # The map containing the device's display properties: width, height and density
