@@ -9,7 +9,7 @@ module Lettuce module Android  module Operations
   class AdbConnection
     include AbstractInterface
     
-    DEFAULT_ADB_HOSTNAME = 'localhost'
+    DEFAULT_ADB_HOSTNAME = '127.0.0.1' # replaced 'localhost'
     DEFAULT_ADB_PORT = 5037
           
     VERSION_SDK_PROPERTY = 'ro.build.version.sdk'
