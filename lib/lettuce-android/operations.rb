@@ -4,6 +4,7 @@ require 'timeout'
 
 require 'lettuce-android/device'
 require 'lettuce-android/view_client'
+require 'lettuce-android/env'
 
 module Lettuce module Android
 
@@ -33,6 +34,7 @@ module Lettuce module Android
       #verbose = options[:verbose] || false
       options[:ignoresecuredevice] ||= false
       options[:serialno] ||= nil
+      
       progname = File.basename($PROGRAM_NAME, File.extname($PROGRAM_NAME))
       if options[:serialno].nil?         
         #options[:serialno] = ARGV.find { |arg| not(arg.start_with? "-") } || ENV['ANDROID_SERIAL'] || '.*'
@@ -76,8 +78,11 @@ module Lettuce module Android
         end
         exit(2)
       end
-      if options[:serialno].match(/[.*()+]/) and not options[:serialno].match(/(\d{1,3}\.){3}\d{1,3}/)
-        #options[:serialno] = obtain_device_serail_number(device)
+      if options[:serialno].match(%r|[.*()+]|) and not options[:serialno].match(/(\d{1,3}\.){3}\d{1,3}/)
+        serial  = obtain_device_serial_number(device)
+        puts "serialno=#{serial}"
+        options[:serialno] = obtain_device_serial_number(device)
+      else
       end
       if options[:verbose]
         $stderr.puts 'Actual device serialno=%s' % options[:serialno]
@@ -85,9 +90,49 @@ module Lettuce module Android
       return device, options[:serialno]
     end
 
+    def obtain_adb_path
+        Env.adb_path
+    end
+    
+    def adb_command
+      "#{obtain_adb_path} -s #{serialno}"
+    end
+    
+    def serialno
+      nil
+    end
+      
     private
-    def obtain_device_serail_number (device)
+    def obtain_device_serial_number (device)
       serialno = device.get_property('ro.serialno')
+      if serialno.nil? or serialno.empty? 
+        serialno = device.shell('getprop ro.serialno')
+      end
+      if serialno.nil? or serialno.empty?
+        qemu = device.shell('getprop ro.kernel.qemu')
+        if qemu and qemu.to_i == 1
+          logger.warn "Running on emulator but no serial number was specified then 'emulator-5554' is used"
+          serialno = 'emulator-5554'
+        end
+      end
+      if serialno.nil? or serialno.empty?
+        get_d_serialno_cmd = "#{obtain_adb_path} -d get-serialno"
+        log get_d_serialno_cmd
+        s = `#{get_d_serialno_cmd}`
+        s.chomp!
+        if s != 'unknown'
+          serialno = s
+        end                   
+      end
+      if serialno.nil? or serialno.empty?
+        get_e_serialno_cmd = "#{obtain_adb_path} -e get-serialno"
+        log get_e_serialno_cmd        
+        s = `#{get_e_serialno_cmd}`
+        s.chomp!
+        if s != 'unknown'
+          serialno = s
+        end
+      end      
       return serialno
     end
     
