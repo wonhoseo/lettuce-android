@@ -79,8 +79,7 @@ module Lettuce module Android
         exit(2)
       end
       if options[:serialno].match(%r|[.*()+]|) and not options[:serialno].match(/(\d{1,3}\.){3}\d{1,3}/)
-        serial  = obtain_device_serial_number(device)
-        puts "serialno=#{serial}"
+        serial  = obtain_device_serial_number(device)        
         options[:serialno] = obtain_device_serial_number(device)
       else
       end
