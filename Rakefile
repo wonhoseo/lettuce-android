@@ -18,9 +18,9 @@ Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://guides.rubygems.org/specification-reference/ for more options
   gem.name = "lettuce-android"
   gem.homepage = "http://github.com/wonhoseo/lettuce-android"
-  gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.license = "Apache 2.0"
+  gem.summary = %Q{client for lettuce-android for automated functional testing on Android}
+  gem.description = %Q{lettuce-android drives tests for android applications.}
   gem.email = "cforgeleader@gmail.com"
   gem.authors = ["Wonho Seo"]
   gem.version = Lettuce::Android::Version::STRING
