@@ -1,5 +1,13 @@
 #!/bin/bash
 
+adb devices
+sleep 10
+adb devices
+sleep 10
+adb devices
+sleep 10
+adb devices
+
 bootanim=""
 failcounter=0
 until [[ "$bootanim" =~ "stopped" ]]; do
