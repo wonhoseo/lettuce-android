@@ -4,7 +4,7 @@
 require 'nokogiri'
 require 'lettuce-android/view'
 
-module Lettuce module Android module Operations
+module Lettuce module Android
 
   class UiAutomatorParser < Nokogiri::XML::SAX::Document
     
@@ -59,4 +59,4 @@ module Lettuce module Android module Operations
     end
   end
   
-end end end
+end end

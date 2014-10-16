@@ -1,25 +1,25 @@
 
 require 'socket'
 require 'lettuce-android/abstract_interface'
+require 'lettuce-android/adb_log_formatter'
 
+module Lettuce module Android
 
-
-module Lettuce module Android  module Operations
-   
   class AdbConnection
-    include AbstractInterface
-    
+
+    include Lettuce::Android::AbstractInterface
+    include Lettuce::Android::AdbLogFormatter
+
     DEFAULT_ADB_HOSTNAME = '127.0.0.1' # replaced 'localhost'
     DEFAULT_ADB_PORT = 5037
-          
+
     VERSION_SDK_PROPERTY = 'ro.build.version.sdk'
-    
-    
+
     attr_reader :serialno
     attr_reader :socket
-    
-    def initialize(options={})
-      @serialno = options[:serialno] || nil
+
+    def initialize(serialno, options = {})
+      @serialno = serialno
       @hostname = options[:hostname] || DEFAULT_ADB_HOSTNAME
       @port = options[:port] || DEFAULT_ADB_PORT
       settransport=  options.has_key?(:settransport) ? options[:settransport] : true
@@ -27,14 +27,14 @@ module Lettuce module Android  module Operations
       init_socket()
       check_version()
       @is_transport_set = false
-      if settransport and (@serialno != nil)
+      if settransport and (not @serialno.nil?)
         set_transport()
       end
     end
-    
+
     def serialno=(serialno)
       if @is_transport_set
-        raise ArgumentError, "Transport is already set, serialno cannot be set once this is done."          
+        raise ArgumentError, "Transport is already set, serialno cannot be set once this is done."
       end
       @serialno=serialno
       set_transport()
@@ -51,7 +51,7 @@ module Lettuce module Android  module Operations
     def set_transport
       AdbConnection.api_not_implemented(self)
     end
-    
+
     def check_connected
       unless @socket
         raise RuntimeError, "ERROR: Not connected"
@@ -68,7 +68,7 @@ module Lettuce module Android  module Operations
         @socket.close()
       end
     end
-    
+
     protected
     def init_socket
       begin
@@ -80,8 +80,8 @@ module Lettuce module Android  module Operations
       end
       @socket = socket
     end
-    
-    def send(message, checkok=true, reconnect=false)
+
+    def send_command(message, checkok=true, reconnect=false)
       if not message.match(/^host:/)
         if not @is_transport_set
           set_transport()
@@ -90,7 +90,7 @@ module Lettuce module Android  module Operations
         check_connected()
       end
       command = '%04X%s' % [message.length, message]
-      socket.write(command)        
+      socket.write(command)
       if checkok
         check_ok()
       end
@@ -99,7 +99,7 @@ module Lettuce module Android  module Operations
         set_transport()
       end
     end
-    
+
     def receive(payloadlength=nil, use_payloadlength=true)
       check_connected()
       if use_payloadlength
@@ -113,7 +113,7 @@ module Lettuce module Android  module Operations
         while nr < nob
           chunk = @socket.read([nob-nr, 4096].min)
           recv << chunk
-          nr += chunk.length      
+          nr += chunk.length
         end
         return recv.to_s
       else
@@ -125,12 +125,12 @@ module Lettuce module Android  module Operations
             break
           end
           recv << chunk
-          nr += chunk.length      
-        end    
+          nr += chunk.length
+        end
         return recv.to_s
-      end      
+      end
     end
-    
+
     def check_ok
       check_connected
       result = @socket.read(4)
@@ -139,7 +139,8 @@ module Lettuce module Android  module Operations
         raise RuntimeError, "ERROR: %s %s" % [ result.to_s, error]
       end
       return true
-    end    
-  end
-end end end
+    end
 
+  end # AdbConnection
+
+end end

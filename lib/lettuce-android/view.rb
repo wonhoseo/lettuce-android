@@ -1,10 +1,11 @@
 
 
-require 'pathname'    
+require 'pathname'
 
 require 'lettuce-android/window'
+require 'lettuce-android/view_constants'
 
-module Lettuce module Android module Operations
+module Lettuce module Android
 
   class ViewNotFoundError < RuntimeError
     def initialize attr, value, root
@@ -14,30 +15,32 @@ module Lettuce module Android module Operations
         msg = "Couldn't find View with %s='%s' in tree with root=%s" % [attr, value, root]
       end
       super msg
-    end    
+    end
   end
-  
+
   class View
-    
+
+    include Lettuce::Android::ViewConstants
+
     DEBUG = true
     DEBUG_WINDOWS = true
     DEBUG_COORDS = true
     DEBUG_STATUSBAR = false
-    
+
     VIEW_CLIENT_TOUCH_WORKAROUND_ENABLED = false
-    
+
     USE_ADB_CLIENT_TO_GET_BUILD_PROPERTIES = true
     SKIP_CERTAIN_CLASSES_IN_GET_XY_ENABLED = false
     # visibility
     VISIBLE = 0x0
     INVISIBLE = 0x4
     GONE = 0x8
-    
+
     attr_accessor :parent
     attr_reader :build
     attr_reader :attributes
     attr_reader :device
-    
+
     class << self
       def factory (arg1, arg2, version = -1, force_view_server_use = false)
         if arg1.is_a?(::Hash)
@@ -77,7 +80,7 @@ module Lettuce module Android module Operations
         end
       end
     end
-    
+
     def initialize(attributes, device, version = -1, force_view_server_use = false)
       init_logger()
       @attributes = attributes
@@ -90,8 +93,8 @@ module Lettuce module Android module Operations
       init_version_and_build(version)
       @use_uiautomator = device.get_sdk_version() >= 16 and not force_view_server_use
       init_property_keys(@version)
-    end  
-   
+    end
+
     def initialize_copy(orig)
       @attributes = @attributes.dup
       @device = @device.dup
@@ -116,9 +119,9 @@ module Lettuce module Android module Operations
           @build[VERSION_SDK_PROPERTY] = -1
         end
         @version = @build[VERSION_SDK_PROPERTY]
-      end      
+      end
     end
-    
+
     ID_PROPERTY = 'mID'
     ID_PROPERTY_UI_AUTOMATOR = 'uniqueId'
     TEXT_PROPERTY = 'text:mText'
@@ -132,7 +135,7 @@ module Lettuce module Android module Operations
     WIDTH_PROPERTY_API_8 = 'getWidth()'
     HEIGHT_PROPERTY = 'layout:getHeight()'
     HEIGHT_PROPERTY_API_8 = 'getHeight()'
-    
+
     private
     def init_property_keys(version)
       @id_property = nil
@@ -161,20 +164,20 @@ module Lettuce module Android module Operations
         @id_property, @text_property = ID_PROPERTY, TEXT_PROPERTY_API_10
         @left_property, @top_property = LEFT_PROPERTY, TOP_PROPERTY
         @width_property, @height_property = WIDTH_PROPERTY, HEIGHT_PROPERTY
-      else # version == -1 or version < 1  
+      else # version == -1 or version < 1
         @id_property, @text_property = ID_PROPERTY, TEXT_PROPERTY
         @left_property, @top_property = LEFT_PROPERTY, TOP_PROPERTY
         @width_property, @height_property = WIDTH_PROPERTY, HEIGHT_PROPERTY
       end
     end
-    
+
     private
     def get_item(key)
       return @attributes[key]
     end
-    
+
     DEBUG_GETATTR = false
-    
+
     def get_attr(name)
       if DEBUG_GETATTR
         logger.debug "    get_attr(#{name}), version: #{@build[VERSION_SDK_PROPERTY]} "
@@ -201,37 +204,37 @@ module Lettuce module Android module Operations
           r = @attributes[suffix]
         else
           raise ArgumentError, name
-        end  
+        end
       end
       # if the method name starts with 'is' let's assume its return value is boolean
       r = true if r == 'true'
       r = false if r == 'false'
       return r
     end
-    
-    # return 
+
+    # return
     def all_possile_name_with_colon(name)
       list = []
-      count =name.count('_') 
+      count =name.count('_')
       0.upto(count) do |i|
         list << name.sub!("_",":")
       end
       return list
     end
-    
+
     public
     def get_class
       @attributes['class']
     end
-    
+
     def get_id
       @attributes['resource-id'] || @attributes[@id_property]
     end
-    
+
     def get_contents_description
       @attributes['content-desc']
     end
-    
+
     # Gets the parent.
     def get_parent
       @parent
@@ -240,29 +243,29 @@ module Lettuce module Android module Operations
     def get_text
       @attributes[@text_property]
     end
-    
+
     def get_width
       if @use_uiautomator
         bounds = @attributes['bounds']
         return bounds[1][0] - bounds[0][0]
       else
-        @attributes[@width_property].to_i   
+        @attributes[@width_property].to_i
       end
     end
-    
+
     def get_height
       if @use_uiautomator
         bounds = @attributes['bounds']
         return bounds[1][1] - bounds[0][1]
       else
-        @attributes[@height_property].to_i   
+        @attributes[@height_property].to_i
       end
     end
-    
+
     def get_unique_id
       @attributes['unique_id']
-    end    
-    
+    end
+
     GET_VISIBILITY_PROPERTY = 'getVisibility()'
     # Gets the View visibility
     def get_visibility
@@ -280,7 +283,7 @@ module Lettuce module Android module Operations
         return -1
       end
     end
-    
+
     # Gets the View X coordinate
     def get_x
       if DEBUG_COORDS
@@ -296,8 +299,8 @@ module Lettuce module Android module Operations
             x += left
             if DEBUG_COORDS
               logger.debug "get_x(), VISIBLE adding #{left}"
-            end            
-          end 
+            end
+          end
         end
       end
       if DEBUG_COORDS
@@ -305,7 +308,7 @@ module Lettuce module Android module Operations
       end
       return x
     end
-    
+
     # Gets the View Y coordinate
     def get_y
       if DEBUG_COORDS
@@ -321,8 +324,8 @@ module Lettuce module Android module Operations
             x += top
             if DEBUG_COORDS
               logger.debug "get_y(), VISIBLE adding #{top}"
-            end            
-          end 
+            end
+          end
         end
       end
       if DEBUG_COORDS
@@ -330,11 +333,11 @@ module Lettuce module Android module Operations
       end
       return y
     end
-    
+
     def get_xy(debug=false)
       if DEBUG_COORDS
         logger.debug "get_xy(), %s %s ## %s" % [get_class(), get_id(), get_unique_id()]
-      end      
+      end
       x = get_x
       y = get_y
       if @use_uiautomator
@@ -350,7 +353,7 @@ module Lettuce module Android module Operations
              'com.android.internal.view.menu.ActionMenuView',
              'com.android.internal.policy.impl.PhoneWindow$DecorView' ].include? parent.get_class()
              cur_parent = cur_parent.parent
-             next             
+             next
           end
         end
         hx += cur_parent.get_x
@@ -363,7 +366,7 @@ module Lettuce module Android module Operations
       statusbar_offset = 0
       pwx, pwy = 0, 0
       if fw
-        if DEBUG_COORDS 
+        if DEBUG_COORDS
           logger.debug "    get_xy: focus window=#{fw}, sb=#{[sbw, sbh]}"
         end
         if fw.wvy <= sbh # it's very unlikely that fw.wvy < sbh, that is a window over the statusbar
@@ -387,38 +390,38 @@ module Lettuce module Android module Operations
       end
       return [x + hx + wvx + pwx, y + hy + wvy + pwy - statusbar_offset]
     end
-    
+
     def get_coords
       if DEBUG_COORDS
         logger.debug "get_coords(), %s %s ## %s" % [get_class(), get_id(), get_unique_id()]
-      end            
+      end
       x, y = get_xy()
       w = get_width()
       h = get_height()
       return [x,y, x+w, y+h]
     end
-    
+
     def get_position_and_size
       x, y = get_xy()
       w = get_width()
       h = get_height()
       return [x,y,w, h]
     end
-    
+
     def get_center
       x, y, w, h = get_position_and_size()
       return [x+w/2,y+h/2]
     end
-    
+
     def add(child_view)
       child_view.parent = self
       @childern << child_view
     end
-    
+
     def is_clickable
       return get_attr('isClickable')
     end
-    
+
     def variable_name_from_id
       _id = get_id()
       if _id
@@ -428,16 +431,16 @@ module Lettuce module Android module Operations
         if %r|id/(?<res_id>[^/]*)(/(?<res_num>\d+))?| =~ _id
           var = $~[:res_id]
           if $~[:res_num]
-            var += $~[:res_num]            
+            var += $~[:res_num]
           end
           if /^\d/ =~ var
             var = 'id_' + var
           end
-        end 
-      end       
+        end
+      end
       return var
     end
-    
+
     # @param filename Absolute path and optional filename receiving the image.
     def write_image_to_file(filename,format='png')
       unless Pathname.new(filename).absolute?
@@ -456,23 +459,23 @@ module Lettuce module Android module Operations
       #save image
       raise "not yet implement"
     end
-        
+
     def to_s
       str = "View["
-      str += @attributes.to_s       
+      str += @attributes.to_s
       str += "]" + "   parent="
       if parent and parent.attributes.has_key?('class')
         str += parent.attributes['class']
       else
         str += "nil"
       end
-      return str      
+      return str
     end
-    
+
     def to_small_s
       str = "View["
       if @attributes.has_key?("class")
-        str += " class" + attribues["class"]        
+        str += " class" + attribues["class"]
       end
       str += " id=%s" % get_id()
       str += " ]"
@@ -484,29 +487,29 @@ module Lettuce module Android module Operations
       end
       return str
     end
-    
+
     def to_mirco_s
       str = ""
       if @attributes.has_key?("class")
-        str += attribues["class"].sub(/.*\./, '')        
+        str += attribues["class"].sub(/.*\./, '')
       end
       str += " %s" % get_id().sub('id/no_id/', '-')
       str += "@%04d%04d%04d%04d" % get_coords()
       str += ""
       return str
     end
-    
+
     def to_tiny_s
       str = "View[]"
       if @attributes.has_key?("class")
-        str += " class="+ attribues["class"].sub(/.*\./, '')        
+        str += " class="+ attribues["class"].sub(/.*\./, '')
       end
       str += " id=%s" % get_id().sub('id/no_id/', '-')
       str += " ]"
       return str
     end
-    
-        
+
+
     private
     def dump_windows_information(debug=false)
       @windows = {}
@@ -514,19 +517,19 @@ module Lettuce module Android module Operations
       dww = device.shell('dumpsys window windows')
       if DEBUG_WINDOWS or debug
         logger.debug dww
-      end      
+      end
       lines = dww.split(/\n/)
-      
+
       # xxx_re
       win_re = /^ *Window #(?<num>\d+) Window{(?<win_id>[0-9a-f]+) (u\d+ )?(?<activity>\S+?)?.*}:/
       current_focus_re = /^  mCurrentFocus=Window{(?<win_id>[0-9a-f]+) .*/
       view_visibility_re = / mViewVisibility=0x(?<visibility>[0-9a-f]+)/
       containing_frame_re = /^   *mContainingFrame=\[(?<cx>\d+),(?<cy>\d+)\]\[(?<cw>\d+),(?<ch>\d+)\] mParentFrame=\[(?<px>\d+),(?<py>\d+)\]\[(?<pw>\d+),(?<ph>\d+)\]/
       content_frame_re = /^   *mContentFrame=\[(?<x>\d+),(?<y>\d+)\]\[(?<w>\d+),(?<h>\d+)\] mVisibleFrame=\[(?<vx>\d+),(?<vy>\d+)\]\[(?<vx1>\d+),(?<vy1>\d+)\]/
-      frames_re = /^   *Frames: containing=\[(?<cx>\d+),(?<cy>\d+)\]\[(?<cw>\d+),(?<ch>\d+)\] parent=\[(?<px>\d+),(?<py>\d+)\]\[(?<pw>\d+),(?<ph>\d+)\]/ 
+      frames_re = /^   *Frames: containing=\[(?<cx>\d+),(?<cy>\d+)\]\[(?<cw>\d+),(?<ch>\d+)\] parent=\[(?<px>\d+),(?<py>\d+)\]\[(?<pw>\d+),(?<ph>\d+)\]/
       content_re = /^     *content=\[(?<x>\d+),(?<y>\d+)\]\[(?<w>\d+),(?<h>\d+)\] visible=\[(?<vx>\d+),(?<vy>\d+)\]\[(?<vx1>\d+),(?<vy1>\d+)\]/
       policy_visibility_re = /mPolicyVisibility=(?<policy_visibility>\S+?) /
-                      
+
       found_win_re_index = 0
       lines.each_with_index do |line,line_index|
         if line_index < found_win_re_index
@@ -545,7 +548,7 @@ module Lettuce module Android module Operations
             if view_visibility_re.match(line2)
               visibility = $~[:visibility].to_i
               if DEBUG_COORDS
-                logger.debug "__dumpWindowsInformation: visibility=#{visibility}" 
+                logger.debug "__dumpWindowsInformation: visibility=#{visibility}"
               end
             end
             if @build[VERSION_SDK_PROPERTY] >= 17
@@ -588,15 +591,15 @@ module Lettuce module Android module Operations
           end
         end
       end
-      
+
       if @windows.has_key?(@current_focus) and @windows[@current_focus].visibility == VISIBILE
         w = @windows[@current_focus]
         return [w.wvx, w.wvy]
       else
-        return [0, 0]  
-      end  
+        return [0, 0]
+      end
     end
-    
+
     def obtain_statusbar_dimensions_if_visible
       sbw , sbh = 0, 0
       @windows.each do |win_id, w|
@@ -610,7 +613,7 @@ module Lettuce module Android module Operations
       end
       return [sbw, sbh]
     end
-    
+
     public
     def touch(type=DOWN_AND_UP)
       x,y = get_center
@@ -626,8 +629,8 @@ module Lettuce module Android module Operations
         device.touch(x, y, type)
       end
     end
-    
-    
+
+
     private
     def logger
       @logger_
@@ -641,19 +644,19 @@ module Lettuce module Android module Operations
       log.datetime_format = "%m-%d %H:%M:%S.%6N"
       #log.formatter = proc do |severity, datetime, progname, msg|
       #  "#{Time.now.strftime("%Y-%m-%d %H:%M:%S")},#{severity}, #{progname} - #{msg}\n"
-      #end        
+      #end
       # FATAL ERROR WARN INFO DEBUG
       #log.level = Logger::WARN
       log.level = Logger::DEBUG
-      @logger_ = log 
-    end     
+      @logger_ = log
+    end
   end
-  
+
   # TextView class.
   class TextView < View
-    
+
   end
-  
+
   # EditText class.
   class EditText < TextView
     def type(text)
@@ -664,7 +667,7 @@ module Lettuce module Android module Operations
       @device.type(text)
       sleep(0.5)
     end
-    
+
     def backspace
       touch()
       sleep(1)
@@ -672,4 +675,4 @@ module Lettuce module Android module Operations
     end
   end
 
-end end end
+end end

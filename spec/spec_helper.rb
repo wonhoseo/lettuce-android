@@ -22,11 +22,14 @@ require 'lettuce-android'
 require 'lettuce-android/version'
 require 'lettuce-android/operations'
 require 'lettuce-android/abase'
+require 'lettuce-android/dsl'
 
 # Requires supporting files with custom matchers and macros, etc,
 # in ./support/ and its subdirectories.
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 
 RSpec.configure do |config|
+
+  config.include Lettuce::Android::DSL 
 
 end

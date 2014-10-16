@@ -1,7 +1,8 @@
 
-require 'lettuce-android'
+#require 'lettuce-android'
 
-module Lettuce::Android::Operations::AdbKeymap
+module Lettuce module Android
+  module AdbKeymap
   KEYMAP={
     "1"=>2,
     "2"=>3,
@@ -234,4 +235,5 @@ module Lettuce::Android::Operations::AdbKeymap
     "S"=>483,
     "B"=>484  
   }
-end
+  end 
+end end

@@ -7,61 +7,64 @@ require 'nokogiri'
 require 'lettuce-android/env'
 require 'lettuce-android/view'
 require 'lettuce-android/ui_automator_parser'
+#require 'lettuce-android/view_constants'
 
-module Lettuce module Android module Operations
-  
+module Lettuce module Android
+
   class ViewClient
-    
+
+    #include Lettuce::Android::ViewConstants
+
     DEBUG = false
     DEBUG_DEVICE = false
     DEBUG_RECEIVED = false
     DEBUG_TREE = false
-    
+
     ADB_DEFAULT_PORT = 5555
-    
+
     # View server port
     VIEW_SERVER_PORT = 4939
     # version sdk property
-    VERSION_SDK_PROPRETY = 'ro.build.version.sdk'
+    VERSION_SDK_PROPERTY = 'ro.build.version.sdk'
     VERSION_RELEASE_PROPERTY = 'ro.build.version.release'
     # class method
-    
+
     VIEW_SERVER_HOST = '127.0.0.1'
-    
+
     USE_ADB_CLIENT_TO_GET_BUILD_PROPERTIES = true
-    
-    
+
+
     TRAVERSE_CIT = 'traverse_show_class_id_and_text'
     TRAVERSE_CITUI = 'traverse_show_class_id_text_and_unique_id'
     TRAVERSE_CITCD = 'traverse_show_class_id_text_and_content_description'
     TRAVERSE_CITC = 'traverse_show_class_id_text_and_center'
     TRAVERSE_CITPS = 'traverse_show_class_id_text_position_and_size'
-        
+
     class << self
-      
+
       def obtain_adb_path
         Env.adb_path
       end
-      
+
       def map_serialno(serialno)
         serialno.strip!
         if %r|^(\d{1,3}\.){3}\d{1,3}$|.match(serialno)
           return serialno + ':%d' % ADB_DEFAULT_PORT
         end
-        
+
         if %r|^(\d{1,3}\.){3}\d{1,3}:\d+$|.match(serialno)
           return serialno
         end
-        
+
         if %r|[.*()+]|.match(serialno)
           raise ArgumentError, "Regular expression not supported as serialno in ViewClient"
         end
         return serialno
       end
-      
+
       #@param extra_info [Proc] the view method to add extra info
-      #@param no_extra_ino [bool] Don't add extra_info 
-      def traverse_show_class_id_and_text(view, extra_info=nil, no_extra_info = nil)     
+      #@param no_extra_ino [bool] Don't add extra_info
+      def traverse_show_class_id_and_text(view, extra_info=nil, no_extra_info = nil)
         begin
           eis = ''
           if extra_info
@@ -83,19 +86,19 @@ module Lettuce module Android module Operations
       def traverse_show_class_id_text_and_unique_id(view)
         return traverse_show_class_id_and_text(view, "get_unique_id")
       end
-      
+
       def traverse_show_class_id_text_and_content_description(view)
         return traverse_show_class_id_and_text(view, "get_content_description", "NAF")
       end
-      
+
       def traverse_show_class_id_text_and_center(view)
         return traverse_show_class_id_and_text(view, "get_center", "NAF")
       end
-      
-      def traverse_show_class_id_text_position_and_size(view)       
+
+      def traverse_show_class_id_text_position_and_size(view)
         return traverse_show_class_id_and_text(view, "get_position_and_size")
       end
-      
+
       def __traverse__(view, indent="", transform="to_s", stream=$stdout)
         unless view
           return
@@ -107,15 +110,15 @@ module Lettuce module Android module Operations
           ius = "%s%s" % [indent, s] # unicode ?
           stream.puts ius
         end
-        for child in view.childern 
+        for child in view.childern
           ViewClient.__traverse__(child, indent+"  ", transform, stream)
         end
       end
     end
-    
+
     attr_reader :device
     attr_reader :serialno
-    
+
     def initialize(device, serialno, options = {})
       init_logger()
       init_device(device)
@@ -137,53 +140,53 @@ module Lettuce module Android module Operations
       @ignore_uiautomator_killed = options[:ignoreuiautomatorkilled]
       init_text_property()
       start_view_server(options[:startviewserver], options[:localport], options[:remoteport])
-      
+
       #The list of windows as obtained by L{ViewClient.list()}
       @windows = nil
-      
+
       if options[:autodump]
         dump()
-      end  
+      end
     end
-  
+
     def dump(window=-1,sleep_delay=1)
       if sleep_delay > 0
         sleep(sleep_delay)
       end
-      
+
       if @use_uiautomator
         dump_with_uiautomator()
       else
         dump_with_view_server(window)
       end
-      
+
     end
-  
-    # 
+
+    #
     # private methods
-    # 
+    #
     private
     def init_device device
       unless device
         raise "Device is not connected"
       else
         @device = device
-      end      
+      end
     end
-    
+
     def init_serialno serialno
       if serialno.nil?
         raise ArguementError "serialno cannot be nil"
       else
         @serialno = ViewClient.map_serialno(serialno)
-      end      
+      end
       if DEBUG_DEVICE
         logger.debug "ViewClient: using device with serialno:%s" % @serialno
       end
     end
 
     def init_options(options={})
-      options[:adb] = options[:adb] || nil      
+      options[:adb] = options[:adb] || nil
       options[:autodump] = options.has_key?(:autodump) ? options[:autodump] : true
       options[:forceviewserveruse] = options.has_key?(:forceviewserveruse) ? options[:forceviewserveruse] : false
       options[:localport] ||= VIEW_SERVER_PORT
@@ -192,7 +195,7 @@ module Lettuce module Android module Operations
       options[:ignoreuiautomatorkilled] ||= false
       options
     end
-    
+
     def init_adb(adb)
       if adb
         if not Pathname.executable?(adb)
@@ -207,7 +210,7 @@ module Lettuce module Android module Operations
     def obtain_adb_path
         Env.adb_path
     end
-        
+
     def init_display
       # The map containing the device's display properties: width, height and density
       @display = {}
@@ -220,7 +223,7 @@ module Lettuce module Android module Operations
             logger.warn "Couldn't determine display %s" % property
           end
         else
-          #nothins    
+          #nothins
         end
       end
     end
@@ -234,7 +237,7 @@ module Lettuce module Android module Operations
           if USE_ADB_CLIENT_TO_GET_BUILD_PROPERTIES
           @build[prop] = device.get_property(prop)
           else
-          @build[prop] = device.shell('getprop ' + prop)               
+          @build[prop] = device.shell('getprop ' + prop)
           end
         rescue
           logger.warn "Couldn't determine build %s" % prop
@@ -249,36 +252,36 @@ module Lettuce module Android module Operations
       end
       return @build
     end
-    
+
     def init_ro
       @ro = {}
       #The map containing the device's ro properties: secure, debuggable
-      for property in ['secure', 'debuggable']        
+      for property in ['secure', 'debuggable']
         begin
           @display[property] = device.get_property('ro.'+property)
         rescue
           logger.warn "Couldn't determine ro %s" % property
           @display[property] = 'UNKNOWN'
         end
-      end      
+      end
     end
-    
+
     TEXT_PROPERTY_UI_AUTOMATOR = 'text'
     TEXT_PROPERTY_API_10 = 'mText'
     TEXT_PROPERTY = 'text:mText'
-    
+
     def init_text_property
       if @use_uiautomator
         @text_property = TEXT_PROPERTY_UI_AUTOMATOR
       else
-        if @build[VERSION_SDK_PROPRETY] <= 10
+        if @build[VERSION_SDK_PROPERTY] <= 10
           @text_property = TEXT_PROPERTY_API_10
         else
           @text_property = TEXT_PROPERTY
         end
       end
     end
-    
+
     def start_view_server(enable_view_server, local_port, remote_port)
       unless @use_uiautomator
         if enable_view_server
@@ -299,7 +302,7 @@ module Lettuce module Android module Operations
             end
           end
         end
-        
+
         @local_port = local_port
         @remote_port = remote_port
         forward_cmd = "#{adb_command} -s #{@serialno} forward tcp:#{@local_port} tcp:#{@remote_port}"
@@ -307,11 +310,11 @@ module Lettuce module Android module Operations
         logger.debug `#{forward_cmd}`
       end
     end
-    
+
     def adb_command
       "#{obtain_adb_path} -s #{serialno}"
-    end    
-    
+    end
+
     def assert_service_response(response)
       unless service_reponse(reponse)
         raise RuntimeError, 'Invalid response received from service.'
@@ -322,25 +325,24 @@ module Lettuce module Android module Operations
     def service_response(response)
       if DEBUG
         logger.debug "serviceResponse: comparing '%s' vs Parcel(%s)" % [response, PARCEL_TRUE]
-      end  
+      end
       result = (response == PARCEL_TRUE)
       return result
     end
-    
+
     def dump_with_uiautomator
-      # Using /dev/tty this works even on devices with no sdcard
       received = device.shell('uiautomator dump /dev/tty >/dev/null')
       received_xml = assert_valid_ui_automator_dump(received)
       set_views_form_uiautomator(received_xml)
     end
-    
-    
+
+
 
 
     private
     def assert_valid_ui_automator_dump(received)
       unless received
-        raise RuntimeError, 'ERROR: Empty UiAutomator dump was received' 
+        raise RuntimeError, 'ERROR: Empty UiAutomator dump was received'
       end
       if DEBUG
         @received = received
@@ -356,7 +358,7 @@ module Lettuce module Android module Operations
         if DEBUG_RECEIVED
           logger.debug "ignoring UiAutomator Killed"
         end
-        killed_re = %r|</hierarchy>[\n\S]*Killed|m 
+        killed_re = %r|</hierarchy>[\n\S]*Killed|m
         if killed_re =~ received
           received.sub!(killed_re,'</hierarchy>')
         elsif DEBUG_RECEIVED
@@ -391,21 +393,21 @@ module Lettuce module Android module Operations
         logger.debug "there are #{@views.length} views in this dump"
       end
     end
-    
+
     def parser_tree_from_uiautomator_dump received
-      doc = UiAutomatorParser.new(@device, @build[VERSION_SDK_PROPERTY])
+      doc = Lettuce::Android::UiAutomatorParser.new(@device, @build[VERSION_SDK_PROPERTY])
       parser = Nokogiri::XML::SAX::Parser.new(doc)
       parser.parse(received)
       @root = doc.root
       @views = doc.views
       @views_by_id = Hash[@views.collect{|view| [view.get_unique_id(), view]}]
     end
-    
+
     def dump_with_view_server(window=-1)
       if window.kind_of?(String)
         if window != '-1'
           list(0)
-          
+
           found = false
           @windows.each do |win_id, package|
             if package == window
@@ -424,31 +426,31 @@ module Lettuce module Android module Operations
               break
             end
           end
-          
+
           unless found
             raise RuntimeError, "ERROR: Cannot find window '%s' in %s" % [window, @windows]
           end
-          
+
         else
           window = -1
         end
       end
-      
+
       view_server_command = 'dump %x\r\n' % window
       received = receive_from_view_server(view_server_command)
-      
+
       if received
-        received = received.encode('utf-8', :undef => :replace)  
+        received = received.encode('utf-8', :undef => :replace)
       end
-      
+
       set_views(received)
-      
+
       if DEBUG_TREE
         traverse(@root)
       end
       @views
     end
-    
+
     # return the list of windows
     def list(sleep_delay = 1)
       if sleep_delay > 0
@@ -458,7 +460,7 @@ module Lettuce module Android module Operations
         raise "ot implemented yet: listing windows with UiAutomator"
       end
       received = receive_from_view_server('list\r\n')
-      
+
       lines = received.split(/\n/)
       lines.each do |line|
         unless line
@@ -480,9 +482,9 @@ module Lettuce module Android module Operations
         end
         @windows[wid.to_h] = package
       end
-      @windows            
+      @windows
     end
-    
+
     private
     def receive_from_view_server(command)
       socket = Socket.new(Socket::AF_INET, Socket::SOCK_STREAM, 0)
@@ -499,10 +501,10 @@ module Lettuce module Android module Operations
         received += socket.read(1024)
         if done_re.match(received[-7..-1])
           break
-        end 
+        end
       end
       socket.close()
-      
+
       if DEBUG
         @received = received
       end
@@ -510,10 +512,10 @@ module Lettuce module Android module Operations
         logger.debug "received #{received.length} chars"
         logger.debug "\n#{received}\n"
       end
-            
+
       return received
     end
-    
+
     public
     # receivce string from view_server
     def set_views(received)
@@ -521,9 +523,9 @@ module Lettuce module Android module Operations
         raise ArgumentError, "received is empty or nil"
       end
       @views = []
-      parser_tree(received.split('\n'))      
+      parser_tree(received.split('\n'))
     end
-    
+
     def parser_tee(received_lines)
       @root = nil
       @views_by_id = {}
@@ -566,7 +568,7 @@ module Lettuce module Android module Operations
             last_view = child
             tree_level = new_level
           else # new_level < tree_level
-            (tree_level-new_level).times do 
+            (tree_level-new_level).times do
               parents.pop()
             end
             parent = parents.pop()
@@ -581,7 +583,7 @@ module Lettuce module Android module Operations
       end
       return @views
     end
-    
+
     def split_attrs(args)
       if @use_uiautomator
         raise RuntimeError, "This method is not compatible with UIAutomator"
@@ -594,11 +596,11 @@ module Lettuce module Android module Operations
         s1 = args[offset_end.upto(offset_end+text_len)]
         ws = u"\xfe"
         s2 = s1.gsub(' ', ws)
-        args.sub!(s1,s2)        
-      end      
+        args.sub!(s1,s2)
+      end
       # RE
       id_re = %r|(?<view_id>id/\S+)|
-      attr_re = %r|(?<attr>\S+?)(?<parens>\(\))?=(?<len>\d+),(?<val>[^ ]*)| 
+      attr_re = %r|(?<attr>\S+?)(?<parens>\(\))?=(?<len>\d+),(?<val>[^ ]*)|
       hash_re = %r|(?<class>\S+?)@(?<oid>[0-9a-f]+)|
       attrs = {}
       view_id = nil
@@ -606,13 +608,13 @@ module Lettuce module Android module Operations
         view_id = $~[:view_id]
         logger.debug "found view with id = #{view_id}" if DEBUG
       end
-      
+
       args.split().each do |attr|
         if attr_re.match(attr)
           _attr = $~[:attr]
           _parens = $~[:parens] ? '()' : ''
           _len = $~[:len].to_i
-          _val = $~[:val] 
+          _val = $~[:val]
           if _len != _val.length
             logger.warn "Invalid len: expected: %d   found: %d   s=%s   e=%s" % [_len, _val.length, _val[0..50], _val[-50..-1]]
           end
@@ -628,9 +630,9 @@ module Lettuce module Android module Operations
           else
             logger.debug "doesn't match" if DEBUG
           end
-        end        
+        end
       end
-      
+
       if true # was assing_view_by_id
         unless view_id
           # If the view has NO_ID we are assigning a default id here (id/no_id) which is
@@ -641,7 +643,7 @@ module Lettuce module Android module Operations
         if @views_by_if.include? view_id
           # sometimes the view ids are not unique, so let's generate a unique id here
           i = 1
-          loop do 
+          loop do
             if @view_by_id.exclude?(new_id)
               new_id = view_id.sub(/\d+$/,'') + "/%d" % i
               break
@@ -654,16 +656,16 @@ module Lettuce module Android module Operations
       end
       return attrs
     end
-    
+
     public
     def traverse(root="ROOT", indent="", transform="to_s", stream = $sysout)
       if root.kind_of?(String) and root == "ROOT"
         root = @root
       end
-      
+
       return ViewClient.__traverse__(root, indent, transform, stream)
     end
-    
+
     def find_view_by_id(view_id, view="ROOT", view_filter=nil)
       unless root
         return nil
@@ -671,7 +673,7 @@ module Lettuce module Android module Operations
       if view.kind_of?(String) and view == "ROOT"
         return find_view_by_id(view_id, @root, view_filter)
       end
-      
+
       if root.get_id == view_id
         if view_filter
           if __send__(view_filter, view)
@@ -679,21 +681,21 @@ module Lettuce module Android module Operations
           end
         else
           return view
-        end        
+        end
       end
-      
+
       if view_id.match(%r|^id/no_id|) or view_id.match(%r|^id/.+/.+|)
         if view.get_unique_id() == view_id
           if view_filter
             if __send__(view_filter, view)
-              return view              
+              return view
             end
           else
             return view
           end
         end
       end
-      
+
       found_view = view.children.find { |child| find_view_by_id(view_id, child, view_filter) }
       if found_view
         if view_filter
@@ -707,7 +709,7 @@ module Lettuce module Android module Operations
           nil
       end
     end
-    
+
     def find_view_by_id_or_raise(view_id, view="ROOT", view_filter=nil)
       found_view = find_view_by_id(view_id, view, view_filter)
       if found_view
@@ -716,11 +718,11 @@ module Lettuce module Android module Operations
         raise ViewNotFoundError("ID", view_id, view)
       end
     end
-    
+
     def find_view_by_tag(tag, view="ROOT")
       return find_view_with_attribute('getTag()', tag, view)
     end
-    
+
     def find_view_by_tag_or_raise(tag, view = "ROOT")
       found_view = find_view_by_tag(tag, view)
       if found_view
@@ -729,26 +731,26 @@ module Lettuce module Android module Operations
         raise ViewNotFoundError("tag", tag, view)
       end
     end
-    
+
     def find_view_with_attribute(attr, val, view="ROOT")
       return find_view_with_attribute_in_tree(attr, val, view)
     end
-    
+
     private
     def find_view_with_attribute_in_tree(attr, val, view)
       unless @root
         logger.error "ERROR: no root, did you forget to call dump()?"
         return nil
       end
-      
+
       if view.kind_of?(String) and view == "ROOT"
         view = @root
       end
-      
+
       if DEBUG
         logger.debug "find_view_with_attribute_in_tree: checking if view=%s hass attr=%s eq_to %s" % [view.to_small_s, attr, val]
-      end      
-      
+      end
+
       if val.kind_of?(Regexp)
         return find_view_with_attribute_in_tree_that_matches(attr, val, view)
       else
@@ -764,7 +766,7 @@ module Lettuce module Android module Operations
       end
       return nil
     end
-    
+
     def find_view_with_attribute_in_tree_or_raise(attr, val, view)
       found_view = find_view_with_attribute_in_tree(attr, val, view)
       if found_view
@@ -773,25 +775,25 @@ module Lettuce module Android module Operations
         raise ViewNotFoundError(attr, val, view)
       end
     end
-    
+
     def find_view_with_attribute_in_tree_that_matches(attr, regex, view="ROOT")
       return __find_view_with_attribute_in_tree_that_matches(attr,regex, view)
     end
-    
+
     def __find_view_with_attribute_in_tree_that_matches(attr, regex, view)
       unless @root
         logger.error "ERROR: no root, did you forget to call dump()?"
         return nil
       end
-      
+
       if view.kind_of?(String) and view == "ROOT"
         view = @root
       end
-      
+
       if DEBUG
         logger.debug "find_view_with_attribute_in_tree_that_matches: checking if view=%s attr=%s matches %s" % [view.to_small_s, attr, regex]
       end
-      
+
       if view and view.attributes.has_key?(attr) and regex.match(view.attributes[attr])
         logger.debug "find_view_with_attribute_in_tree %s" % view.to_small_s() if DEBUG
         return view
@@ -801,21 +803,21 @@ module Lettuce module Android module Operations
           return v
         end
       end
-      return nil      
+      return nil
     end
-    
+
     def find_view_with_text(text, view="ROOT")
       if DEBUG
         logger.debug "find_view_with_text (#{text}, #{view})"
       end
-      
+
       if text.kind_of?(Regexp)
         return find_view_with_attribute_that_matches(@text_property, text, view)
       else
         return find_view_with_attribute(@text_property, text, view)
       end
     end
-    
+
     def find_view_with_text_or_raise(text, view="ROOT")
       found_view = find_view_with_text(text, view)
       if found_view
@@ -824,12 +826,12 @@ module Lettuce module Android module Operations
         raise ViewNotFoundError(@text_property, text, view)
       end
     end
-    
+
     # Finds the View with the specified content description
     def find_view_with_content_description(val, view="ROOT")
       return find_view_with_attribute_in_tree('content-desc', text, view)
     end
-    
+
     # Finds the View with the specified content description
     def find_view_with_content_description_or_raise(val, view="ROOT")
       found_view = find_view_with_content_description(val, view)
@@ -837,9 +839,9 @@ module Lettuce module Android module Operations
         return found_view
       else
         raise ViewNotFoundError('content-desc', val, view)
-      end      
+      end
     end
-    
+
     public
     def find_views_cotaining_point(x,y, filter = nil)
       unless filter
@@ -847,15 +849,15 @@ module Lettuce module Android module Operations
       end
       return @views.find{|v| v.cotaining_point(x,y) and filter.call(v)}
     end
-    
+
     def get_views_by_id
       @views_by_id
     end
-    
+
     def focused_window_position
       get_focused_window_id
     end
-    
+
     def get_sdk_version
       @build[SDK_VERSION_PROPERTY]
     end
@@ -867,7 +869,7 @@ module Lettuce module Android module Operations
       end
       return false
     end
-    
+
     def write_image_to_file(filename, format='png')
       unless Pathname.new(filename).absolute?
         raise ArgumentError, "write_image_to_file expects an absolute path"
@@ -878,9 +880,9 @@ module Lettuce module Android module Operations
       if DEBUG
         logger.debug "write_image_to_file filename=#{filename}"
       end
-      #device.take_snapshot(filename, format)      
+      #device.take_snapshot(filename, format)
     end
-    
+
     def logger
       @logger_
     end
@@ -893,13 +895,13 @@ module Lettuce module Android module Operations
       log.datetime_format = "%m-%d %H:%M:%S.%6N"
       #log.formatter = proc do |severity, datetime, progname, msg|
       #  "#{Time.now.strftime("%Y-%m-%d %H:%M:%S")},#{severity}, #{progname} - #{msg}\n"
-      #end        
+      #end
       # FATAL ERROR WARN INFO DEBUG
       #log.level = Logger::WARN
       log.level = Logger::DEBUG
-      @logger_ = log 
+      @logger_ = log
     end
-    
+
   end
-  
-end end end
+
+end end

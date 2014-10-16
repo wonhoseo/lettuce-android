@@ -1,6 +1,6 @@
 
 
-module Lettuce module Android  module Operations
+module Lettuce module Android
   
   class DeviceInfo
     attr_reader :serialno, :status, :qualifiers
@@ -19,4 +19,4 @@ module Lettuce module Android  module Operations
     end 
   end
 
-end end end
+end end
