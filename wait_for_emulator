@@ -1,12 +1,11 @@
 #!/bin/bash
 
-adb devices
-sleep 10
-adb devices
-sleep 10
-adb devices
-sleep 10
-adb devices
+devices = "2"
+until [[ "$devices" =~ "3" ]] do
+  devices = `adb devices | wc -l`
+  echo "$devices"
+  sleep 10
+done
 
 bootanim=""
 failcounter=0
