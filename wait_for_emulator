@@ -1,7 +1,7 @@
 #!/bin/bash
 
 devices = "2"
-until [[ "$devices" =~ "3" ]] do
+until [[ "$devices" =~ "3" ]]; do
   devices = `adb devices | wc -l`
   echo "$devices"
   sleep 10
