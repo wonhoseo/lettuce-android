@@ -1,9 +1,15 @@
 #!/bin/bash
 
 devices = "2"
+failcounter=0
 until [[ "$devices" =~ "3" ]]; do
   devices = `adb devices | wc -l`
   echo "$devices"
+  let "failcounter += 1"
+  if [[ $failcounter -gt 100 ]]; then
+    echo "Failed to start emulator"
+    exit 1
+  fi
   sleep 10
 done
 
