@@ -9,6 +9,10 @@
     <!-- Input directories -->
     <property name="source.dir" value="src/main/java" />
     
+    <!-- Output directories -->
+    <property name="out.dir" value="target" />
+    <property name="out.dexed.absolute.dir" location="${out.dir}/dexedLibs" />
+    
     <!--
     http://stackoverflow.com/questions/16026355/adding-external-jars-to-an-android-uiautomator-project
     -->
@@ -23,7 +27,7 @@
     </path>
 
     <property name="dex.file.name" value="classes.dex" />
-    <property name="out.dir" value="target" />
+
     <property name="out.absolute.dir" location="${out.dir}" />
     <property name="out.absolute.bundle.dir" location="${out.absolute.dir}/bundle" />
     <property name="intermediate.dex.bundle.file" location="${out.absolute.bundle.dir}/${dex.file.name}" />
@@ -31,7 +35,10 @@
     <property name="out.bundle.file" value="${out.absolute.dir}/bundle.jar" />
 
     <target name="-pre-compile">
+        <echo level="info">----------</echo>
+        <echo level="info">Creating output directories if needed...</echo>
         <mkdir dir="${out.absolute.bundle.dir}" />
+        <mkdir dir="${out.dexed.absolute.dir}" />
     </target>
 
     <!-- overwrite the compile target in uibuild.xml to include to external jars -->
@@ -54,6 +61,7 @@
     <target name="-post-dex">
         <dex executable="${dx}"
                 output="${intermediate.dex.bundle.file}"
+                dexedlibs="${out.dexed.absolute.dir}"                
                 nolocals="@{nolocals}"
                 verbose="${verbose}">
             <fileset dir="${jar.libs.absolute.dir}">
