@@ -51,7 +51,13 @@ module Lettuce module Android
     end
 
     def lettuce_server_package
-      "lettuce-server-#{Lettuce::Android::VERSION}.jar"
+      "lettuce-server.jar"
+      #"lettuce-server-#{Lettuce::Android::VERSION}.jar"
+    end
+
+    def lettuce_bundle_package
+      "bundle.jar"
+      #"bundle-#{Lettuce::Android::VERSION}.jar"
     end
 
     def lettuce_server_class
@@ -62,9 +68,14 @@ module Lettuce module Android
       File.absolute_path(File.join(File.dirname(__FILE__), "../../server/bin/#{lettuce_server_package}"))
     end
 
+    def lettuce_bundle_file
+      File.absolute_path(File.join(File.dirname(__FILE__), "../../server/bin/#{lettuce_bundle_package}"))
+    end
+
     def start_automation_server
       info "starting lettuce-server on the device"
       adb "push #{lettuce_server_file} /data/local/tmp"
+      adb "push #{lettuce_bundle_file} /data/local/tmp"
       Thread.new do
         adb "shell uiautomator runtest #{lettuce_server_package} -c #{lettuce_server_class}"
       end
@@ -98,7 +109,7 @@ module Lettuce module Android
     end
 
     def adb(command)
-      adb_command = "adb -s #{serial} #{command}"
+      adb_command = "adb -s #{serialno} #{command}"
       info "executing '#{adb_command}'"
       `#{adb_command} 2>/dev/null`.tap do
         if $?.exitstatus != 0
