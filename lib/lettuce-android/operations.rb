@@ -29,7 +29,13 @@ module Lettuce module Android
         @server_timeout = 60.seconds.to_i
   
         @logger = Logger.new(STDERR)
+        # FATAL ERROR WARN INFO DEBUG
         @logger.level = Logger::INFO
+        #@logger.progname = "Device"
+        @logger.datetime_format = "%m-%d %H:%M:%S.%6N"
+        #@logger.formatter = proc do |severity, datetime, progname, msg|
+        #  "#{Time.now.strftime("%Y-%m-%d %H:%M:%S")},#{severity}, #{progname} - #{msg}\n"
+        #end        
       end
   
       def obtain_new_port

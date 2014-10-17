@@ -14,7 +14,7 @@ module Lettuce module Android
     end
 
       def check_version(reconnect = true)
-        send_command('host:version')
+        send_message('host:version')
         may_payload = socket.read(4) # return 0x0004 => 4 bytes
         version = socket.read(4) # return 0x00f1 => 31
         if version.hex != ADB_SERVER_VERSION
@@ -44,14 +44,14 @@ module Lettuce module Android
         end
         @serialno = device_info.serialno
         message = 'host:transport:%s' % @serialno
-        send_command(message,false)
+        send_message(message,false)
         @is_transport_set = true
       end
 
     def get_devices
       init_socket()
-      #send_command('host:devices-l', checkok=false)
-      send_command('host:devices-l', false)
+      #send_message('host:devices-l', checkok=false)
+      send_message('host:devices-l', false)
       begin
         check_ok()
       rescue RuntimeError => ex

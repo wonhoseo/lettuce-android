@@ -1,0 +1,105 @@
+# encoding:utf-8
+
+require "lettuce-android/device_commands"
+
+module Lettuce module Android
+
+  module DeviceActions
+
+    include Lettuce::Android::DeviceCommands
+
+    def scroll_to_text text, index = '0'
+      perform_action :scroll_to_text_by_index, :text => text, :index => index
+    end
+
+    def click_button button_text
+      perform_action :click, :text => button_text, :type => 'Button'
+    end
+
+    def click_button_and_wait button_text
+      perform_action :click_and_wait_for_new_window, :text => button_text, :type => 'Button'
+    end
+
+    def click_check_box(check_box_text)
+      perform_action :click, :text => check_box_text, :type => 'CheckBox'
+    end
+
+    def click_checked_text_view button_text
+      perform_action :click, :text => button_text, :type => 'CheckedTextView'
+    end
+
+    def click_text text
+      perform_action :click, :text => text, :type => 'TextView'
+    end
+
+    def click_text_and_wait text
+      perform_action :click_and_wait_for_new_window, :text => text, :type => 'TextView'
+    end
+
+    def click_element element_description
+      perform_action :click, :description => element_description
+    end
+
+    def click_element_and_wait element_description
+      perform_action :click_and_wait_for_new_window, :description => element_description
+    end
+
+    def fill_in field_description, options = {with: ''}
+      perform_action :set_text, :description => field_description, :text => options[:with]
+    end
+
+    def fill_in_by_label field_label, options = {with: ''}
+      perform_action :set_text_by_label, :label => field_label, :text => options[:with]
+    end
+
+    def fill_in_by_index index, options = {with: ''}
+      perform_action :set_text_by_index, :index => index, :text => options[:with]
+    end
+
+    def launch_home
+      perform_action :launch_home
+    end
+
+    def launch_settings_app app_name
+      perform_action :select_from_apps_list, :appName => app_name
+    end
+
+    def launch_application application_name
+      perform_action :launch_app, :appName => application_name
+    end
+
+    def long_click_element element_description
+      perform_action :long_click, :description => element_description
+    end
+
+    def long_click_text element_text
+      perform_action :long_click, :text =>element_text, :type => 'TextView'
+    end
+
+    def launch_settings_item item_name
+      perform_action :select_menu_in_settings, :menuName => item_name
+    end
+
+    def press_back
+      perform_action :press_back
+    end
+
+    def press_enter
+      perform_action :press_enter
+    end
+
+    def unlock
+      perform_action :unlock
+    end
+
+    def wake_up
+      perform_action :wake_up
+    end
+
+    def sleep
+      perform_action :sleep
+    end
+
+  end
+
+end end

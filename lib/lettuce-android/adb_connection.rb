@@ -81,7 +81,7 @@ module Lettuce module Android
       @socket = socket
     end
 
-    def send_command(message, checkok=true, reconnect=false)
+    def send_message(message, checkok=true, reconnect=false)
       if not message.match(/^host:/)
         if not @is_transport_set
           set_transport()

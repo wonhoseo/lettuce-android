@@ -2,6 +2,7 @@
 
 require 'lettuce-android/adb_host_client'
 require 'lettuce-android/adb_keymap'
+require 'benchmark'
 
 module Lettuce module Android
 
@@ -31,13 +32,16 @@ module Lettuce module Android
       recv =""
       if cmd
         close()
-        init_socket()
-        transport_command = 'host:transport:%s' % @serialno
-        send_command(transport_command)
-        #shell_command = #command("shell:#{cmd}")
-        shell_command = "shell:#{cmd}"
-        send_command(shell_command)
-        recv = receive(nil,false)
+        response = benchmark do
+          init_socket()
+          transport_command = 'host:transport:%s' % @serialno
+          send_message(transport_command)
+          #shell_command = #command("shell:#{cmd}")
+          shell_command = "shell:#{cmd}"
+          send_message(shell_command)
+          recv = receive(nil,false)
+          {response: recv}
+        end
       end
       return recv.to_s
     end
@@ -269,6 +273,17 @@ module Lettuce module Android
       shell('input keyevent MENU')
       shell('input keyevent BACK')
       # TODO wait and check is_locked value
+    end
+    
+    private
+    
+    def benchmark
+      result = nil
+      realtime = Benchmark.realtime do
+        result = yield
+      end
+      debug "action '#{result[:action]}' completed in #{(realtime * 1000).to_i}ms"
+      result[:response]
     end
 
   end
