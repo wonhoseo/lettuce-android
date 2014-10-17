@@ -28,7 +28,8 @@ module Lettuce module Android
         @timeout = 2.seconds.to_i
         @server_timeout = 60.seconds.to_i
   
-        @logger = Logger.new(STDERR)
+        @logger = Logger.new(STDOUT)
+        #@logger = Logger.new(STDERR)
         # FATAL ERROR WARN INFO DEBUG
         @logger.level = Logger::INFO
         #@logger.progname = "Device"

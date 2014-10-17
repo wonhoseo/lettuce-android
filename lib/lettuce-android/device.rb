@@ -24,7 +24,7 @@ module Lettuce module Android
       super(serialno,options)
 
       @lettuce_server_port = Lettuce::Android::Operations.config.obtain_new_port
-      start_lettuce_server
+      #start_lettuce_server#TODO ??? adb forward tcp:7120 tcp:7120 
     end
 
     def using_timeout timeout
