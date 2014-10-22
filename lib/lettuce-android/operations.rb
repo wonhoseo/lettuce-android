@@ -77,10 +77,10 @@ module Lettuce module Android
       end
 
       def default_device
-        unless @default_device
-          @default_device = using_device(default_device_serialno)
+        unless @current_device
+          @current_device = using_device(default_device_serialno)
         end
-        @default_device
+        @current_device
       end
 
       def current_device
@@ -88,9 +88,6 @@ module Lettuce module Android
       end
 
       def using_device(serialno, &block)
-        puts "using_device ???"
-        s1 = serialno || Lettuce::Android::Operations.default_device_serialno        
-        config.logger.debug "[Operations]using_device(serialno=[#{serialno}, #{s1}])"
         original_device = current_device
         use_device(serialno || Lettuce::Android::Operations.default_device_serialno).tap do |device|
           device.instance_eval(&block) if block_given?
