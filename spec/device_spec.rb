@@ -20,6 +20,7 @@ describe "Device" do
       device = Lettuce::Android::Device.new(nil)
       device.serialno = '.*'
       expect(device).not_to eq(nil)
+      
     end    
   end
   
@@ -31,5 +32,13 @@ describe "Device" do
     end
   end
   
+  describe "#launch_settings" do
+    it "#launch_settings setup" do
+      device = Lettuce::Android::Operations.default_device
+      device.launch_settings
+      device.scroll_to_text "잠금화면"
+      device.click_text "잠금화면"
+    end
+  end
 end
 

@@ -17,22 +17,23 @@ module Lettuce module Android
     ServerTimeoutError = Class.new(Timeout::Error)
     ActionFailedError = Class.new(RuntimeError)
 
-    attr_reader :lettuce_server_port
-
+    #attr_reader :lettuce_server_port
+    
     def initialize(serialno,options={})
       init_logger()
       super(serialno,options)
-
-      @lettuce_server_port = Lettuce::Android::Operations.config.obtain_new_port
-      #start_lettuce_server#TODO ??? adb forward tcp:7120 tcp:7120 
+      if @is_transport_set
+        debug "initialize start_lettuce_server"
+        start_lettuce_server
+      end
     end
 
     def using_timeout timeout
       old_timeout = Lettuce::Android::Operations.config.timeout
-      Honeydew.config.timeout = timeout
+      Lettuce::Android::Operations.config.timeout = timeout
       yield
     ensure
-      Honeydew.config.timeout = old_timeout
+      Lettuce::Android::Operations.config.timeout = old_timeout
     end
 
     def self.instance(serialno = ".*", options = {})
@@ -53,7 +54,7 @@ module Lettuce module Android
 
     def perform_action action, arguments = {}, options = {}
       ensure_device_ready
-      arguments[:timeout] = Honeydew.config.timeout.to_s
+      arguments[:timeout] = Lettuce::Android::Operations.config.timeout.to_s
       debug "performing action #{action} with arguments #{arguments}"
       send_command action, arguments
     end
@@ -66,7 +67,7 @@ module Lettuce module Android
 
       response = benchmark do
         Net::HTTP.start(uri.hostname, uri.port) do |http|
-          http.read_timeout = Honeydew.config.server_timeout
+          http.read_timeout = Lettuce::Android::Operations.config.server_timeout
           response = http.request request
           {response: response, action: action}
         end
@@ -80,7 +81,7 @@ module Lettuce module Android
         info "action failed, response: #{response.body}"
         raise ActionFailedError.new "Action #{action} called with arguments #{arguments.inspect} failed"
       else
-        raise "honeydew-server failed to process command, response: #{response.body}"
+        raise "test-server failed to process command, response: #{response.body}"
       end
     end
 
@@ -95,23 +96,23 @@ module Lettuce module Android
 
     def ensure_device_ready
       @device_ready ||= begin
-        wait_for_honeydew_server
+        wait_for_test_server
         true
       end
     end
 
-    def wait_for_honeydew_server
-      info 'waiting for honeydew-server to respond'
-      Timeout.timeout(Honeydew.config.server_timeout.to_i, ServerTimeoutError) do
-        Kernel.sleep 0.1 until honeydew_server_alive?
+    def wait_for_test_server
+      info 'waiting for test-server to respond'
+      Timeout.timeout(Lettuce::Android::Operations.config.server_timeout.to_i, ServerTimeoutError) do
+        Kernel.sleep 0.1 until test_server_alive?
       end
-      info 'honeydew-server is alive and awaiting commands'
+      info 'test-server is alive and awaiting commands'
 
     rescue ServerTimeoutError
-      raise 'timed out waiting for honeydew-server to respond'
+      raise 'timed out waiting for test-server to respond'
     end
 
-    def honeydew_server_alive?
+    def test_server_alive?
       Net::HTTP.get_response(device_endpoint('/status')).is_a?(Net::HTTPSuccess)
     rescue Errno::ECONNREFUSED, Errno::ECONNRESET, Errno::ETIMEDOUT, Errno::ENETRESET, EOFError
     end

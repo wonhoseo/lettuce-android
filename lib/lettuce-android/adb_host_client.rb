@@ -13,40 +13,40 @@ module Lettuce module Android
       super(serialno,options)
     end
 
-      def check_version(reconnect = true)
-        send_message('host:version')
-        may_payload = socket.read(4) # return 0x0004 => 4 bytes
-        version = socket.read(4) # return 0x00f1 => 31
-        if version.hex != ADB_SERVER_VERSION
-          raise RuntimeError, "ERROR: Incorrect ADB server version %s (expecting %s)" % [version.hex, ADB_SERVER_VERSION]
-        end
-        if reconnect
-          init_socket()
-        end
-        return true
+    def check_version(reconnect = true)
+      send_message('host:version')
+      may_payload = socket.read(4) # return 0x0004 => 4 bytes
+      version = socket.read(4) # return 0x00f1 => 31
+      if version.hex != ADB_SERVER_VERSION
+        raise RuntimeError, "ERROR: Incorrect ADB server version %s (expecting %s)" % [version.hex, ADB_SERVER_VERSION]
       end
+      if reconnect
+        init_socket()
+      end
+      return true
+    end
 
-      def set_transport
-        if not @serialno
-          raise ValueError, "serialno not set, empty or None"
-        end
-        check_connected()
-        serialno_re = /#{serialno}/
-        found = false
-        for device_info in get_devices()
-          if serialno_re.match(device_info.serialno)
-            found = true
-            break
-          end
-        end
-        if not found
-          raise RuntimeError, "ERROR: couldn't find device that matches '%s'" % serialno
-        end
-        @serialno = device_info.serialno
-        message = 'host:transport:%s' % @serialno
-        send_message(message,false)
-        @is_transport_set = true
+    def set_transport
+      if not @serialno
+        raise ValueError, "serialno not set, empty or None"
       end
+      check_connected()
+      serialno_re = /#{serialno}/
+      found = false
+      for device_info in get_devices()
+        if serialno_re.match(device_info.serialno)
+          found = true
+          break
+        end
+      end
+      if not found
+        raise RuntimeError, "ERROR: couldn't find device that matches '%s'" % serialno
+      end
+      @serialno = device_info.serialno
+      message = 'host:transport:%s' % @serialno
+      send_message(message,false)
+      @is_transport_set = true
+    end
 
     def get_devices
       init_socket()

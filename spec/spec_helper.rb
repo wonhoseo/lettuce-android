@@ -8,6 +8,9 @@ end
 
 SimpleCov.configure do
   clean_filters
+  add_filter do |src|
+    !(src.filename =~ /^#{SimpleCov.root}/) unless src.filename =~ /lettuce-android/
+  end
   load_profile 'test_frameworks'
 end
 
@@ -30,6 +33,23 @@ Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each {|f| require f}
 
 RSpec.configure do |config|
 
-  config.include Lettuce::Android::DSL 
+  config.include Lettuce::Android::Operations
+  config.include Lettuce::Android::DSL
 
+  config.before(:suite) do
+    puts "### before suite ###"
+  end
+  config.before(:context) do |context|
+    puts "*** before context ***"
+    #puts context.methods
+  end
+  config.before(:example) do |ex|
+    puts "=== before example ==="
+    puts ex.description
+    puts ex.example_group
+  end
+  
+  config.after(:suite) do
+    puts "### after suite ###"
+  end
 end

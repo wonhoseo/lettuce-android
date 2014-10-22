@@ -12,20 +12,37 @@ module Lettuce module Android
     DOWN = 1
     DOWN_AND_UP = 2
     VERSION_SDK_PROPRETY = 'ro.build.version.sdk'
+    
+    attr_reader :lettuce_server_port
+    
     def initialize(serialno, options = {})
       super(serialno, options)
 
       @build = {}
-        if @is_transport_set
-          @build[VERSION_SDK_PROPRETY] = get_property_internal(VERSION_SDK_PROPRETY)
-        end
+      initialize_attrs_after_setup_serialno
     end
 
     def serialno=(serialno)
       super(serialno)
+      initialize_attrs_after_setup_serialno
+    end
+    
+    def initialize_attrs_after_setup_serialno
+      initialize_test_agent_port
+      initialize_version_sdk_property
+    end
+    
+    def initialize_test_agent_port
+      if @is_transport_set
+        @lettuce_server_port = Lettuce::Android::Operations.config.obtain_new_port(serialno)
+        debug "Device init test_agent_port=#{lettuce_server_port}"
+      end      
+    end
+    
+    def initialize_version_sdk_property
       if @is_transport_set
         @build[VERSION_SDK_PROPRETY] = get_property_internal(VERSION_SDK_PROPRETY)
-      end
+      end      
     end
 
     def shell(cmd)
@@ -40,7 +57,7 @@ module Lettuce module Android
           shell_command = "shell:#{cmd}"
           send_message(shell_command)
           recv = receive(nil,false)
-          {response: recv}
+          {action:shell_command , response: recv}
         end
       end
       return recv.to_s

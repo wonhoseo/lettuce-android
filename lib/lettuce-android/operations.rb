@@ -28,10 +28,10 @@ module Lettuce module Android
         @timeout = 2.seconds.to_i
         @server_timeout = 60.seconds.to_i
   
-        @logger = Logger.new(STDOUT)
+        @logger = Logger.new(STDERR)
         #@logger = Logger.new(STDERR)
         # FATAL ERROR WARN INFO DEBUG
-        @logger.level = Logger::INFO
+        @logger.level = Logger::DEBUG#Logger::INFO
         #@logger.progname = "Device"
         @logger.datetime_format = "%m-%d %H:%M:%S.%6N"
         #@logger.formatter = proc do |severity, datetime, progname, msg|
@@ -39,8 +39,17 @@ module Lettuce module Android
         #end        
       end
   
-      def obtain_new_port
-        @port.tap { @port += 1 }
+      def obtain_new_port(serialno)
+        #@port.tap { @port += 1 }
+        obtain_new_server_port[serialno]
+      end
+      private
+      def obtain_new_server_port
+        @ports ||= Hash.new do |hash, serialno|
+          #config.logger.debug "[Operations::Config] port[#{serialno}]"
+          #@port = @port + 1
+          hash[serialno] = @port.tap {@port += 1}          
+        end
       end
     end
 
@@ -68,7 +77,10 @@ module Lettuce module Android
       end
 
       def default_device
-        @default_device ||= device[default_device_serialno]
+        unless @default_device
+          @default_device = using_device(default_device_serialno)
+        end
+        @default_device
       end
 
       def current_device
@@ -76,6 +88,9 @@ module Lettuce module Android
       end
 
       def using_device(serialno, &block)
+        puts "using_device ???"
+        s1 = serialno || Lettuce::Android::Operations.default_device_serialno        
+        config.logger.debug "[Operations]using_device(serialno=[#{serialno}, #{s1}])"
         original_device = current_device
         use_device(serialno || Lettuce::Android::Operations.default_device_serialno).tap do |device|
           device.instance_eval(&block) if block_given?
@@ -96,11 +111,13 @@ module Lettuce module Android
       private
 
       def use_device(serialno)
+        config.logger.debug "[Operations]use_device(serialno=[#{serialno}])"
         @current_device = device[serialno]
       end
 
       def device
         @devices ||= Hash.new do |hash, serialno|
+          config.logger.debug "[Operations] device[#{serialno}]"
           hash[serialno] = Device.new(serialno)
         end
       end
@@ -189,9 +206,9 @@ module Lettuce module Android
       "#{obtain_adb_path} -s #{serialno}"
     end
 
-    def serialno
-      nil
-    end
+    #def serialno
+    #  nil
+    #end
 
     private
     def obtain_device_serial_number (device)

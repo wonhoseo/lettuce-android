@@ -4,7 +4,8 @@ require_relative 'spec_helper'
 describe "ViewClient" do
   #include Lettuce::Android::Operations
   before do
-    use_device :my_device
+    puts "use_device in view client"
+    use_device :my_device    
     #@my_vc = Lettuce::Android::ViewClient.new(my_device, my_device.serialno)
   end 
     

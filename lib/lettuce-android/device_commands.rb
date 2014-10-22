@@ -21,7 +21,7 @@ module Lettuce module Android
     end
 
     def device_endpoint action
-      URI.join("http://localhost:#{port}", action)
+      URI.join("http://127.0.0.1:#{lettuce_server_port}", action)
     end
 
     def dump_window_hierarchy(local_path)
@@ -38,8 +38,9 @@ module Lettuce module Android
     end
 
     def start_lettuce_server
+      debug "start_lettuce_server"
       forwarding_port
-      terminate_automation_server
+      terminate_lettuce_server
       start_automation_server
     end
 
@@ -65,11 +66,11 @@ module Lettuce module Android
     end
 
     def lettuce_server_file
-      File.absolute_path(File.join(File.dirname(__FILE__), "../../server/bin/#{lettuce_server_package}"))
+      File.absolute_path(File.join(File.dirname(__FILE__), "../../server/target/#{lettuce_server_package}"))
     end
 
     def lettuce_bundle_file
-      File.absolute_path(File.join(File.dirname(__FILE__), "../../server/bin/#{lettuce_bundle_package}"))
+      File.absolute_path(File.join(File.dirname(__FILE__), "../../server/target/#{lettuce_bundle_package}"))
     end
 
     def start_automation_server
@@ -77,14 +78,15 @@ module Lettuce module Android
       adb "push #{lettuce_server_file} /data/local/tmp"
       adb "push #{lettuce_bundle_file} /data/local/tmp"
       Thread.new do
-        adb "shell uiautomator runtest #{lettuce_server_package} -c #{lettuce_server_class}"
+        adb "shell uiautomator runtest #{lettuce_server_package} #{lettuce_bundle_package} -c #{lettuce_server_class}"
       end
       at_exit do
-        terminate_honeydew_server
+        terminate_lettuce_server
       end
     end
 
     def forwarding_port
+      debug "forwarding_port"
       adb "forward tcp:#{lettuce_server_port} tcp:7120"
     end
 
@@ -111,7 +113,7 @@ module Lettuce module Android
     def adb(command)
       adb_command = "adb -s #{serialno} #{command}"
       info "executing '#{adb_command}'"
-      `#{adb_command} 2>/dev/null`.tap do
+      `#{adb_command}`.tap do
         if $?.exitstatus != 0
           message = "ADB command '#{command}' failed"
           error message
